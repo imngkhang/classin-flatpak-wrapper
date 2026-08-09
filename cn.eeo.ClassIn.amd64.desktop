@@ -1,0 +1,15 @@
+[Desktop Entry]
+Categories=Education;
+Comment[zh_CN]=ClassIn
+Comment=ClassIn
+Exec=/app/bin/classin-wrapper %u
+Icon=cn.eeo.ClassIn
+MimeType=x-scheme-handler/classin;application/x-edb;
+Name=ClassIn
+Name[zh_CN]=ClassIn
+StartupNotify=true
+StartupWMClass=ClassIn
+Keywords=classin;
+Terminal=false
+Type=Application
+Version=6.0.8.2737
