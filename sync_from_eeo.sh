@@ -33,12 +33,6 @@ if [[ ! -f "$MANIFEST_TEMPLATE" ]]; then
   exit 1
 fi
 
-# Remove existing output manifest
-if [[ -f "$MANIFEST_OUTPUT" ]]; then
-  echo "Removing old manifest: $MANIFEST_OUTPUT"
-  rm -f "$MANIFEST_OUTPUT"
-fi
-
 echo "Fetching EEO configuration..."
 CONFIG_DATA=$(curl -sSL "$CONF_URL")
 
@@ -50,6 +44,24 @@ VER_ARM64=$(echo "$CONFIG_DATA" | jq -r '.[] | select(.confName=="eeocn_linux_ar
 
 echo "AMD64 Version: $VER_AMD64"
 echo "ARM64 Version: $VER_ARM64"
+
+if [[ -f "$MANIFEST_OUTPUT" ]]; then
+  EXISTING_URL_AMD64=$(jq -r '.modules[] | select(.name=="classin") | .sources[] | select(.["filename"]=="classin-amd64.deb") | .url' "$MANIFEST_OUTPUT" 2>/dev/null || true)
+  EXISTING_URL_ARM64=$(jq -r '.modules[] | select(.name=="classin") | .sources[] | select(.["filename"]=="classin-arm64.deb") | .url' "$MANIFEST_OUTPUT" 2>/dev/null || true)
+
+  if [[ "$EXISTING_URL_AMD64" == "$URL_AMD64" && "$EXISTING_URL_ARM64" == "$URL_ARM64" ]]; then
+    echo "Manifest $MANIFEST_OUTPUT is already up to date ($VER_AMD64 / $VER_ARM64). Skipping download."
+    exit 0
+  fi
+fi
+
+echo "New version detected or manifest missing. Generating new $MANIFEST_OUTPUT..."
+
+# Remove existing output manifest
+if [[ -f "$MANIFEST_OUTPUT" ]]; then
+  echo "Removing old manifest: $MANIFEST_OUTPUT"
+  rm -f "$MANIFEST_OUTPUT"
+fi
 
 # Download & process AMD64 .deb
 DEB_AMD64="tmp_amd64.deb"

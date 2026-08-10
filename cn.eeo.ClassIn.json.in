@@ -37,6 +37,10 @@
                 },
                 {
                     "type": "file",
+                    "path": "cn.eeo.ClassIn.xml"
+                },
+                {
+                    "type": "file",
                     "path": "cn.eeo.ClassIn.amd64.desktop",
                     "only-arches": [
                         "x86_64"
@@ -65,7 +69,8 @@
                 "install -d /app/share/icons/hicolor/scalable/apps",
                 "install -m644 classin.svg /app/share/icons/hicolor/scalable/apps/cn.eeo.ClassIn.svg",
                 "install -d /app/share/mime/packages",
-                "ln -s /app/extra/usr/share/mime/packages/eeo-edb-mime.xml /app/share/mime/packages/cn.eeo.ClassIn.xml"
+                "install -m644 cn.eeo.ClassIn.xml /app/share/mime/packages/cn.eeo.ClassIn.xml",
+                "update-mime-database /app/share/mime"
             ]
         },
         {
