@@ -36,4 +36,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           args: |
-            --verbose --update --autocommit --never-fork cn.eeo.ClassIn.json
+            --verbose --update --commit-only --never-fork cn.eeo.ClassIn.json
