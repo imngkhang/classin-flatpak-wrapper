@@ -87,7 +87,14 @@
                     ],
                     "url": "https://www.eeo.cn/download/client/classin_6.0.8.2737_amd64.deb",
                     "sha256": "c3e871eaf6f2810d0c9ffb16f4259a6a97784f6ed730f4227dddef6682d73e07",
-                    "size": 477240652
+                    "size": 477240652,
+                    "is-main-source": true,
+                    "x-checker-data": {
+                        "type": "json",
+                        "url": "https://www.eeo.cn/sysshare/custom/download_conf.json",
+                        "version-query": ".[] | select(.confName==\"eeocn_linux_amd64_version\") | .confValue",
+                        "url-query": ".[] | select(.confName==\"eeocn_linux_amd64\") | .confValue"
+                    }
                 },
                 {
                     "type": "extra-data",
@@ -97,7 +104,14 @@
                     ],
                     "url": "https://www.eeo.cn/download/client/classin_6.0.8.2738_arm64.deb",
                     "sha256": "df9a9d9322a84e360388dbddc47de295ad71bc5ad61c993814c8804e6ffe5230",
-                    "size": 444679008
+                    "size": 444679008,
+                    "is-main-source": true,
+                    "x-checker-data": {
+                        "type": "json",
+                        "url": "https://www.eeo.cn/sysshare/custom/download_conf.json",
+                        "version-query": ".[] | select(.confName==\"eeocn_linux_arm_version\") | .confValue",
+                        "url-query": ".[] | select(.confName==\"eeocn_linux_arm\") | .confValue"
+                    }
                 },
                 {
                     "type": "file",

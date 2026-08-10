@@ -2,7 +2,7 @@ name: Check for updates
 
 on:
   schedule:
-    # Runs every 6 hours (at minute 52)
+    # Runs every 6 hours
     - cron: '52 3/6 * * *'
   workflow_dispatch: 
 
@@ -10,7 +10,6 @@ jobs:
   check:
     timeout-minutes: 10
     runs-on: ubuntu-latest
-    # Grant permissions to GITHUB_TOKEN so the bot can commit or open PRs
     permissions:
       contents: write
       pull-requests: write
@@ -19,19 +18,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Run sync script before checking external data
-      - name: Run sync_from_eeo.sh
-        run: |
-          chmod +x ./sync_from_eeo.sh
-          ./sync_from_eeo.sh
-
       - name: Run Flatpak External Data Checker
         uses: docker://ghcr.io/flathub/flatpak-external-data-checker:latest
         env:
-          GIT_AUTHOR_NAME: Flathub Bot
-          GIT_COMMITTER_NAME: Flathub Bot
-          GIT_AUTHOR_EMAIL: bot@flathub.org
-          GIT_COMMITTER_EMAIL: bot@flathub.org
+          GIT_AUTHOR_NAME: imngkhang
+          GIT_COMMITTER_NAME: imngkhang
+          GIT_AUTHOR_EMAIL: nnguyenkhang14@gmail.com
+          GIT_COMMITTER_EMAIL: nnguyenkhang14@gmail.com
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: --verbose --update --commit-to-current-branch --never-fork cn.eeo.ClassIn.json
+          # --never-fork is needed because the repository permissions
+          # reported by the GitHub API claim that the user cannot push to the
+          # repo, whereas in fact they can.
+          args: |
+            --verbose --update --never-fork cn.eeo.ClassIn.json
