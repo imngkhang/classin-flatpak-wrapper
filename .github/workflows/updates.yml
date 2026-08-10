@@ -20,6 +20,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Clear stale Docker image cache
+        run: |
+          docker image rm -f ghcr.io/flathub/flatpak-external-data-checker:latest || true
+
       # Run sync script before checking external data
       - name: Run sync_from_eeo.sh
         run: |
