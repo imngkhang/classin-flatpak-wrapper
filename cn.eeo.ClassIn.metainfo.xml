@@ -57,8 +57,25 @@
   </description>
   
   <launchable type="desktop-id">cn.eeo.ClassIn.desktop</launchable>
-  
-  <developer_name>Empower Education Online Ltd.</developer_name>
+
+  <screenshots>
+    <screenshot type="default">
+      <image type="source">https://raw.githubusercontent.com/imngkhang/classin-flatpak-wrapper/main/screenshots/screenshot1.png</image>
+      <caption>ClassIn login interface</caption>
+    </screenshot>
+    <screenshot>
+      <image type="source">https://raw.githubusercontent.com/imngkhang/classin-flatpak-wrapper/main/screenshots/screenshot2.png</image>
+      <caption>ClassIn main interface</caption>
+    </screenshot>
+    <screenshot>
+      <image type="source">https://raw.githubusercontent.com/imngkhang/classin-flatpak-wrapper/main/screenshots/screenshot3.png</image>
+      <caption>ClassIn blackboard</caption>
+    </screenshot>
+  </screenshots>
+
+  <developer id="cn.eeo">
+    <name>Empower Education Online Ltd.</name>
+  </developer>
   <url type="homepage">https://www.classin.com/</url>
   <url type="help">https://www.classin.com/support/</url>
 
