@@ -3,15 +3,17 @@
     "runtime": "org.freedesktop.Platform",
     "runtime-version": "25.08",
     "sdk": "org.freedesktop.Sdk",
-    "command": "/app/bin/classin-wrapper",
+    "command": "classin-wrapper",
     "finish-args": [
        "--share=network",
         "--share=ipc",
         "--socket=x11",
         "--socket=pulseaudio",
         "--device=all",
-        "--filesystem=host",
-        "--allow=devel"
+        "--filesystem=home",
+        "--filesystem=/media",
+        "--filesystem=/run/media",
+        "--filesystem=/mnt"
     ],
     "cleanup": [
         "/include",

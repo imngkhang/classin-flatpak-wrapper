@@ -45,57 +45,79 @@ VER_ARM64=$(echo "$CONFIG_DATA" | jq -r '.[] | select(.confName=="eeocn_linux_ar
 echo "AMD64 Version: $VER_AMD64"
 echo "ARM64 Version: $VER_ARM64"
 
+# Check if the manifest file needs to be regenerated
+NEED_MANIFEST_GEN=true
 if [[ -f "$MANIFEST_OUTPUT" ]]; then
   EXISTING_URL_AMD64=$(jq -r '.modules[] | select(.name=="classin") | .sources[] | select(.["filename"]=="classin-amd64.deb") | .url' "$MANIFEST_OUTPUT" 2>/dev/null || true)
   EXISTING_URL_ARM64=$(jq -r '.modules[] | select(.name=="classin") | .sources[] | select(.["filename"]=="classin-arm64.deb") | .url' "$MANIFEST_OUTPUT" 2>/dev/null || true)
 
   if [[ "$EXISTING_URL_AMD64" == "$URL_AMD64" && "$EXISTING_URL_ARM64" == "$URL_ARM64" ]]; then
-    echo "Manifest $MANIFEST_OUTPUT is already up to date ($VER_AMD64 / $VER_ARM64). Skipping download."
-    exit 0
+    echo "Manifest $MANIFEST_OUTPUT is already up to date."
+    NEED_MANIFEST_GEN=false
   fi
 fi
 
-echo "New version detected or manifest missing. Generating new $MANIFEST_OUTPUT..."
-
-# Remove existing output manifest
-if [[ -f "$MANIFEST_OUTPUT" ]]; then
-  echo "Removing old manifest: $MANIFEST_OUTPUT"
+# Generate the manifest file if needed
+if [[ "$NEED_MANIFEST_GEN" == true ]]; then
+  echo "Generating new $MANIFEST_OUTPUT..."
   rm -f "$MANIFEST_OUTPUT"
+
+  # Process AMD64 package
+  DEB_AMD64="tmp_amd64.deb"
+  wget -q -O "$DEB_AMD64" "$URL_AMD64"
+  SHA256_AMD64=$(sha256sum "$DEB_AMD64" | awk '{print $1}')
+  SIZE_AMD64=$(stat -c%s "$DEB_AMD64")
+  rm -f "$DEB_AMD64"
+  # Process ARM64 package
+  DEB_ARM64="tmp_arm64.deb"
+  wget -q -O "$DEB_ARM64" "$URL_ARM64"
+  SHA256_ARM64=$(sha256sum "$DEB_ARM64" | awk '{print $1}')
+  SIZE_ARM64=$(stat -c%s "$DEB_ARM64")
+  rm -f "$DEB_ARM64"
+  # Generate the manifest file by replacing placeholders in the template
+  sed \
+    -e "s|@CLASSIN_URL_AMD64@|${URL_AMD64}|g" \
+    -e "s|@CLASSIN_SHA256_AMD64@|${SHA256_AMD64}|g" \
+    -e "s|\"@CLASSIN_SIZE_AMD64@\"|${SIZE_AMD64}|g" \
+    -e "s|@CLASSIN_URL_ARM64@|${URL_ARM64}|g" \
+    -e "s|@CLASSIN_SHA256_ARM64@|${SHA256_ARM64}|g" \
+    -e "s|\"@CLASSIN_SIZE_ARM64@\"|${SIZE_ARM64}|g" \
+    "$MANIFEST_TEMPLATE" > "$MANIFEST_OUTPUT"
+
+  echo "Successfully generated $MANIFEST_OUTPUT!"
 fi
 
-# Download & process AMD64 .deb
-DEB_AMD64="tmp_amd64.deb"
-wget -q -O "$DEB_AMD64" "$URL_AMD64"
-SHA256_AMD64=$(sha256sum "$DEB_AMD64" | awk '{print $1}')
-SIZE_AMD64=$(stat -c%s "$DEB_AMD64")
-rm -f "$DEB_AMD64"
 
-# Download & process ARM64 .deb
-DEB_ARM64="tmp_arm64.deb"
-wget -q -O "$DEB_ARM64" "$URL_ARM64"
-SHA256_ARM64=$(sha256sum "$DEB_ARM64" | awk '{print $1}')
-SIZE_ARM64=$(stat -c%s "$DEB_ARM64")
-rm -f "$DEB_ARM64"
+METAINFO_FILE="cn.eeo.ClassIn.metainfo.xml"
+TODAY_DATE=$(date +%Y-%m-%d)
 
-echo "Rendering $MANIFEST_OUTPUT..."
+if [[ -f "$METAINFO_FILE" ]]; then
+  echo "Processing release entries for $METAINFO_FILE..."
 
-# Replace placeholders and unquote 'size' to real links and numbers
-sed \
-  -e "s|@CLASSIN_URL_AMD64@|${URL_AMD64}|g" \
-  -e "s|@CLASSIN_SHA256_AMD64@|${SHA256_AMD64}|g" \
-  -e "s|\"@CLASSIN_SIZE_AMD64@\"|${SIZE_AMD64}|g" \
-  -e "s|@CLASSIN_URL_ARM64@|${URL_ARM64}|g" \
-  -e "s|@CLASSIN_SHA256_ARM64@|${SHA256_ARM64}|g" \
-  -e "s|\"@CLASSIN_SIZE_ARM64@\"|${SIZE_ARM64}|g" \
-  "$MANIFEST_TEMPLATE" > "$MANIFEST_OUTPUT"
+  # Check if the release entries for the new versions already exist
+  ENTRIES_TO_ADD=""
 
-echo "Successfully generated $MANIFEST_OUTPUT!"
+  if [[ "$VER_AMD64" == "$VER_ARM64" ]]; then
+    # If the versions are the same, we only need to add one entry
+    if ! grep -q "version=\"${VER_AMD64}\"" "$METAINFO_FILE"; then
+      ENTRIES_TO_ADD="    <release version=\"${VER_AMD64}\" date=\"${TODAY_DATE}\">\n      <description>\n        <p>ClassIn Linux release for x86_64 and aarch64.</p>\n      </description>\n    </release>"
+    fi
+  else
+    # If the versions are different
+    if ! grep -q "version=\"${VER_ARM64}\"" "$METAINFO_FILE"; then
+      ENTRIES_TO_ADD="${ENTRIES_TO_ADD}    <release version=\"${VER_ARM64}\" date=\"${TODAY_DATE}\">\n      <description>\n        <p>ClassIn Linux release for aarch64 (ARM64).</p>\n      </description>\n    </release>\n"
+    fi
 
-echo "Updating versions in desktop files..."
-if [[ -f cn.eeo.ClassIn.amd64.desktop ]]; then
-  sed -i "s/^Version=.*/Version=${VER_AMD64}/" cn.eeo.ClassIn.amd64.desktop
-fi
+    if ! grep -q "version=\"${VER_AMD64}\"" "$METAINFO_FILE"; then
+      ENTRIES_TO_ADD="${ENTRIES_TO_ADD}    <release version=\"${VER_AMD64}\" date=\"${TODAY_DATE}\">\n      <description>\n        <p>ClassIn Linux release for x86_64 (AMD64).</p>\n      </description>\n    </release>\n"
+    fi
+  fi
 
-if [[ -f cn.eeo.ClassIn.arm64.desktop ]]; then
-  sed -i "s/^Version=.*/Version=${VER_ARM64}/" cn.eeo.ClassIn.arm64.desktop
+  if [[ -n "$ENTRIES_TO_ADD" ]]; then
+    echo "Inserting new release entries..."
+    perl -0777 -pi -e "s|(<releases>)|\\1\n${ENTRIES_TO_ADD}|s" "$METAINFO_FILE"
+    echo "Successfully updated releases in $METAINFO_FILE!"
+  else
+    echo "No new version detected for metainfo releases. Skipping."
+  fi
 fi
