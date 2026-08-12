@@ -6,6 +6,20 @@ This is an unofficial Flatpak wrapper for ClassIn.
 
 Since ClassIn only officially provides `.deb` packages (which cannot be installed directly on Red Hat, SUSE, Arch, Gentoo-based, or immutable Linux distributions), this wrapper packages and extracts the official `.deb` binaries directly within the Flatpak sandbox.
 
+## 🔓 File Access & Security
+For security reasons, ClassIn runs in a strict sandbox by default and is restricted to standard user directories (Downloads, Documents, etc.) to protect your system.
+
+If you need ClassIn to access your entire home directory or custom locations, you can manually grant this permission by running:
+
+```bash
+flatpak override --user com.classin.ClassIn --filesystem=home
+```
+Note: To revert to the secure default sandbox settings at any time, run:
+
+```bash
+flatpak override --user --reset com.classin.ClassIn
+```
+
 ## ⚠️ Known Issues
   - **Screen sharing does not work on Wayland:** This is an upstream issue from ClassIn (EEO). The client lacks `libqwayland.so` implementation, resulting in a black screen when attempting to share. A temporary workaround is running your session on X11.
   
