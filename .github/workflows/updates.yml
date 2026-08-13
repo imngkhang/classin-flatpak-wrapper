@@ -1,34 +1,29 @@
 name: Check for updates
-
 on:
   schedule:
-    # Runs every 6 hours
-    - cron: '52 3/6 * * *'
-  workflow_dispatch: 
-
+    - cron: '52 3/6 * * *' 
+  workflow_dispatch: {}
 jobs:
-  check:
-    timeout-minutes: 10
+  flatpak-external-data-checker:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-
+    if: github.repository_owner == 'flathub'
+    strategy:
+      matrix:
+        branch: [ branch/23.08, branch/24.08, beta ]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Run Flatpak External Data Checker
-        uses: docker://ghcr.io/flathub/flatpak-external-data-checker:latest
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.branch }}
+      - uses: docker://ghcr.io/flathub/flatpak-external-data-checker:latest
         env:
-          GIT_AUTHOR_NAME: imngkhang
-          GIT_COMMITTER_NAME: imngkhang
-          GIT_AUTHOR_EMAIL: nnguyenkhang14@gmail.com
-          GIT_COMMITTER_EMAIL: nnguyenkhang14@gmail.com
+          GIT_AUTHOR_NAME: Flatpak External Data Checker
+          GIT_COMMITTER_NAME: Flatpak External Data Checker
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           # --never-fork is needed because the repository permissions
           # reported by the GitHub API claim that the user cannot push to the
           # repo, whereas in fact they can.
-          args: |
-            --verbose --update --never-fork cn.eeo.ClassIn.json
+          args: --verbose --update --never-fork cn.eeo.ClassIn.json
