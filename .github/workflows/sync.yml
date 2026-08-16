@@ -33,7 +33,7 @@ jobs:
 
             git checkout HEAD -- README.md
 
-            git commit -m "sync: pull changes from flathub repo" || exit 0
+            git commit -m "sync pull changes from flathub repo" || exit 0
             git push origin main
           else
             echo "Repository is already up to date."
