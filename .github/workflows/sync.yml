@@ -1,0 +1,40 @@
+name: Sync from Flathub
+
+on:
+  schedule:
+    - cron: '0 0 * * *' 
+  workflow_dispatch: 
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout personal repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure user
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Pull from Flathub repo
+          
+          git remote add upstream https://github.com/flathub/cn.eeo.ClassIn.git
+          git fetch upstream master
+
+          if [ $(git rev-list HEAD..upstream/master --count) -gt 0 ]; then
+            echo "Merging changes from Flathub repo..."
+            git merge upstream/master --no-commit --no-ff || true
+
+            git checkout HEAD -- README.md
+
+            git commit -m "sync: pull changes from flathub repo" || exit 0
+            git push origin master
+          else
+            echo "Repository is already up to date."
+          fi
