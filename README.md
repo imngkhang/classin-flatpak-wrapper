@@ -1,3 +1,6 @@
+# Note:
+This is a backup repo, I recommend you to contribute and report bugs on [this repo](https://github.com/flathub/cn.eeo.ClassIn)
+
 # ClassIn unofficial Flatpak wrapper
 
 ## Description
@@ -9,7 +12,7 @@ Since ClassIn only officially provides `.deb` packages (which cannot be installe
 ## ⚠️ Known Issues
   - **Screen sharing does not work on Wayland:** This is an upstream issue from ClassIn (EEO). The client lacks `libqwayland.so` implementation, resulting in a black screen when attempting to share. A temporary workaround is running your session on X11.
   
-If you encounter any other issues, please report them on [GitHub Issues](https://github.com/imngkhang/classin-flatpak-wrapper/issues).
+If you encounter any other issues, please report them on [GitHub Issues](https://github.com/flathub/cn.eeo.ClassIn/issues).
 
 ## 🚀 Quick Start
 
